@@ -77,7 +77,7 @@
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">brew</span><span> install zola
 </span></code></pre>
 <p><strong>Note:</strong> <a href="https://www.getzola.org/documentation/getting-started/installation/">Installation Page</a></p>
-<p>Since I am hosting this on github pages, I created a repository with my username &quot;vjay15.github.io&quot; and another repository where the website files are hosted, you can have a gitignore, otherwise it could be left empty. Clone the repositories locally and cd to the directory (The present working directory should be the website file repository's folder), then</p>
+<p>Since I am hosting this on github pages, I created a repository with my username "vjay15.github.io" and another repository where the website files are hosted, you can have a gitignore, otherwise it could be left empty. Clone the repositories locally and cd to the directory (The present working directory should be the website file repository's folder), then</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">zola</span><span> init </span><span style="color:#65737e;">#in case you have added LICENSE do -f
 </span></code></pre>
 <p>Which should result in Zola asking a few questions to initialise your page</p>
@@ -114,7 +114,7 @@
 <p>All of the static assets like images, files and CSS will go under the static directory, you are free to organize them into whatever folder structure you want, I have created separate folder for files, images and styles under the static directory.</p>
 <p>Let us go through how I structure my templates</p>
 <ul>
-<li>The base.html is the base template for all the pages, it contains the header, footer, Navigation bar, linking the style sheets etc. </li>
+<li>The base.html is the base template for all the pages, it contains the header, footer, Navigation bar, linking the style sheets etc.</li>
 <li>The index.html is my home page, self explanatory</li>
 <li>The page.html is the default page structure for all the different pages I have in my website</li>
 <li>The section.html is the page which I use to list out pages in a section, in my case I have only blog section so it lists all the blogs</li>
@@ -185,7 +185,7 @@
 </span></code></pre>
 <p>In case you are publishing this website to elsewhere I suggest you to check the documentation: <a href="https://www.getzola.org/documentation/deployment/github-pages/">Link</a></p>
 <p>This will run and deploy the page automatically the moment you push code to the repository. With that we have now successfully built a static site using Zola from scratch!
-Another feature of Zola just like other SSGs is that you can use a pre-existing theme and use it instead. I like to control how the page looks by myself and keep it minimalistic, therefore I created the structure and just made AI write the styles hehe. </p>
+Another feature of Zola just like other SSGs is that you can use a pre-existing theme and use it instead. I like to control how the page looks by myself and keep it minimalistic, therefore I created the structure and just made AI write the styles hehe.</p>
 <h3 id="optional-adding-giscus-for-comments">Optional: Adding Giscus for comments</h3>
 <p>I have added Giscus to all the blog pages in my website so I can receive comments, therefore I will also add on how to add Giscus. Giscus is a comments system built using Github Discussions. The comments are all tracked in a separate repository that is created by you, so it's entirely under your control!</p>
 <p>Here are the steps to add Giscus to your website:</p>

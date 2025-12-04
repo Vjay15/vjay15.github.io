@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title> - Blog</title>
+    <link rel="self" type="application/atom+xml" href="https://vjay15.github.io/blog/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://vjay15.github.io/blog/"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2025-12-03T00:00:00+00:00</updated>
+    <id>https://vjay15.github.io/blog/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Creating a Profile and Blog page using Zola</title>
+        <published>2025-12-03T00:00:00+00:00</published>
+        <updated>2025-12-03T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            Vjaylakshman K
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://vjay15.github.io/blog/zola-tutorial/"/>
+        <id>https://vjay15.github.io/blog/zola-tutorial/</id>
+        
+        <content type="html" xml:base="https://vjay15.github.io/blog/zola-tutorial/">&lt;p&gt;Hello people :D,&lt;&#x2F;p&gt;
+&lt;p&gt;Finally after years of procrastination and laziness, the stars have aligned and I have a blog and profile page! All it took me is a morning to set this all up and get it up and running and yes I will acknowledge that I had to use AI for generating the CSS files because I am no good with that. Anyway this blog is supposed to be a very easy approach as to how can you also make a blog page for yourself!&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;ssg-static-site-generators&quot;&gt;SSG (Static Site Generators)&lt;&#x2F;h2&gt;
+&lt;p&gt;First of all let&#x27;s get started with what an SSG is, according to Mozilla docs&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;A static site generator (SSG) is a software used to generate static websites. A static website is comprised of HTML, CSS, and JavaScript files. Most importantly static sites do not have server-side logic, so for any given URL, all users will receive the same content. Authors write content in any form accepted by the generator, such as Markdown, reStructuredText, HTML, (and sometimes even React, and so on), and the generator compiles them into a set of optimized static files that can be rendered by the browser.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;In short this allows you to just focus on writing content using markdown or any required format and the SSG automatically converts it into the required HTML files. This allows for less headaches in formatting the HTML page and instead focus on writing content using Markdown, which is very easy!&lt;&#x2F;p&gt;
+&lt;p&gt;There are a lot of Static Site Generators that are available out there, let me list some of them&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.jekyllrb.com&quot;&gt;Jekyll&lt;&#x2F;a&gt; - One of the most famous Static Site Generators, written in ruby&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.gohugo.io&quot;&gt;Hugo&lt;&#x2F;a&gt; - A SSG but written in Golang, makes it really fast&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.getzola.org&#x2F;&quot;&gt;Zola&lt;&#x2F;a&gt; - A SSG but written in Rust, which I have used to create this page!&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Honestly, any SSG should get your job done, but I wanted to use something simple and since Zola was also written in rust, I wanted to try it out!&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;setting-up-zola&quot;&gt;Setting up Zola&lt;&#x2F;h2&gt;
+&lt;p&gt;The Documentation had already provided the ways in which Zola could be installed, and I was using a Mac in order to set it up, therefore I used brew to download Zola&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;brew&lt;&#x2F;span&gt;&lt;span&gt; install zola
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;strong&gt;Note:&lt;&#x2F;strong&gt; &lt;a href=&quot;https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;installation&#x2F;&quot;&gt;Installation Page&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Since I am hosting this on github pages, I created a repository with my username &quot;vjay15.github.io&quot; and another repository where the website files are hosted, you can have a gitignore, otherwise it could be left empty. Clone the repositories locally and cd to the directory (The present working directory should be the website file repository&#x27;s folder), then&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;zola&lt;&#x2F;span&gt;&lt;span&gt; init &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;#in case you have added LICENSE do -f
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Which should result in Zola asking a few questions to initialise your page&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;color:#c0c5ce;&quot;&gt;&lt;code&gt;&lt;span&gt;Welcome to Zola!
+&lt;&#x2F;span&gt;&lt;span&gt;Please answer a few questions to get started quickly.
+&lt;&#x2F;span&gt;&lt;span&gt;Any choices made can be changed by modifying the `config.toml` file later.
+&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; What is the URL of your site? (https:&#x2F;&#x2F;example.com): https:&#x2F;&#x2F;vjay15.github.io
+&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; Do you want to enable Sass compilation? [Y&#x2F;n]: n
+&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; Do you want to enable syntax highlighting? [y&#x2F;N]: y
+&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; Do you want to build a search index of the content? [y&#x2F;N]: y
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;Done! Your site was created in &#x2F;Users&#x2F;vjay&#x2F;vjay15.github.io
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;Get started by moving into the directory and using the built-in server: `zola serve`
+&lt;&#x2F;span&gt;&lt;span&gt;Visit https:&#x2F;&#x2F;www.getzola.org for the full documentation.
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The URL of the site is the default URL of your website, SASS is a preprocessor that allows you to use advanced features like variables, nesting etc. If you want to enable it, since I am using vanilla CSS I have disabled it. Syntax highlighting is used for codeblocks and search index allows for easy indexing of your pages for SEO optimization.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;working-with-zola&quot;&gt;Working with Zola&lt;&#x2F;h2&gt;
+&lt;p&gt;After you have successfully set up Zola you will end up with the directory structure like this&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span&gt; tree                                                                                                                                                                        
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;├──&lt;&#x2F;span&gt;&lt;span&gt; LICENSE
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;├──&lt;&#x2F;span&gt;&lt;span&gt; config.toml
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;├──&lt;&#x2F;span&gt;&lt;span&gt; content
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;├──&lt;&#x2F;span&gt;&lt;span&gt; static
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;├──&lt;&#x2F;span&gt;&lt;span&gt; templates
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;└──&lt;&#x2F;span&gt;&lt;span&gt; themes
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;5&lt;&#x2F;span&gt;&lt;span&gt; directories, 2 files
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;I am not going to be explaining in detail about what each of these directories and files do, because the Overview page of Zola docs does a better job at it so do check it out.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;overview&#x2F;&quot;&gt;Overview Page&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Now that you&#x27;ve read that you might have got the basic idea behind how Zola helps us organise our content using Markdown and HTML. Now I will explain the rest in a short manner, I might be skipping a lot of details here so I again suggest you to go read the docs if you want in depth explanation.&lt;&#x2F;p&gt;
+&lt;p&gt;All of the static assets like images, files and CSS will go under the static directory, you are free to organize them into whatever folder structure you want, I have created separate folder for files, images and styles under the static directory.&lt;&#x2F;p&gt;
+&lt;p&gt;Let us go through how I structure my templates&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;The base.html is the base template for all the pages, it contains the header, footer, Navigation bar, linking the style sheets etc.&lt;&#x2F;li&gt;
+&lt;li&gt;The index.html is my home page, self explanatory&lt;&#x2F;li&gt;
+&lt;li&gt;The page.html is the default page structure for all the different pages I have in my website&lt;&#x2F;li&gt;
+&lt;li&gt;The section.html is the page which I use to list out pages in a section, in my case I have only blog section so it lists all the blogs&lt;&#x2F;li&gt;
+&lt;li&gt;The blog.html is the page which is the base structure for all the blogs&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;The page URLs are constructed based on the name of the markdown files, so for example if you take my about me page the markdown name is about.md, it is constructed like
+&lt;code&gt;https:&#x2F;&#x2F;vjay15.github.io&#x2F;about&lt;&#x2F;code&gt;. For sections it will be &lt;code&gt;https:&#x2F;&#x2F;example.com&#x2F;section&#x2F;&amp;lt;md_filename&amp;gt;&lt;&#x2F;code&gt;. Therefore be careful in naming your md files. The page titles for the navbar are stored in config.toml&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;color:#c0c5ce;&quot;&gt;&lt;code&gt;&lt;span&gt; # Navigation items for navbar
+&lt;&#x2F;span&gt;&lt;span&gt;navbar_items = [
+&lt;&#x2F;span&gt;&lt;span&gt;    { name = &amp;quot;About&amp;quot;, url = &amp;quot;&#x2F;about&amp;quot; },
+&lt;&#x2F;span&gt;&lt;span&gt;    { name = &amp;quot;Portfolio&amp;quot;, url = &amp;quot;&#x2F;portfolio&amp;quot; },
+&lt;&#x2F;span&gt;&lt;span&gt;    { name = &amp;quot;Blog&amp;quot;, url = &amp;quot;&#x2F;blog&amp;quot; },
+&lt;&#x2F;span&gt;&lt;span&gt;    { name=&amp;quot;Bucket List&amp;quot;, url=&amp;quot;&#x2F;bucketlist&amp;quot;}
+&lt;&#x2F;span&gt;&lt;span&gt;]
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;and is displayed by looping through the items, in the base.html file&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;html&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-html &quot;&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;&lt;span&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;nav&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;div &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;class&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;nav-container&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;&amp;gt;
+&lt;&#x2F;span&gt;&lt;span&gt;      &amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;a &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;href&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;{{ config.base_url }}&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;class&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;site-name&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;&amp;gt;Vjaylakshman K&amp;lt;&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;a&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
+&lt;&#x2F;span&gt;&lt;span&gt;      &amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;ul&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
+&lt;&#x2F;span&gt;&lt;span&gt;        {% if config.extra.navbar_items %}
+&lt;&#x2F;span&gt;&lt;span&gt;          {% for item in config.extra.navbar_items %}
+&lt;&#x2F;span&gt;&lt;span&gt;            &amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;li&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;a &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;href&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;{{ get_url(path=item.url) }}&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;&amp;gt;{{ item.name }}&amp;lt;&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;a&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;&amp;lt;&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;li&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
+&lt;&#x2F;span&gt;&lt;span&gt;          {% endfor %}
+&lt;&#x2F;span&gt;&lt;span&gt;        {% endif %}
+&lt;&#x2F;span&gt;&lt;span&gt;      &amp;lt;&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;ul&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &amp;lt;&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;div&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &amp;lt;&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;nav&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The get_url is a built in function provided by Zola to fetch the permalink of the pages. You can then choose your favourite AI or LLM tool to generate a minimalist CSS template for your website. Test it out and check if it all works and looks well :D&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;setting-up-github-pages-for-zola&quot;&gt;Setting up Github Pages for Zola&lt;&#x2F;h3&gt;
+&lt;p&gt;In order to finally deploy it on Github pages, create a main.yml file under &lt;code&gt;.github&#x2F;workflows&lt;&#x2F;code&gt; and add the following YAML code. This is under the assumption that the page is going to be deployed in another repository. Before that make sure the DEPLOY_TOKEN is added to the secrets of the repository (This is a personal access token, check how to make one here: &lt;a href=&quot;https:&#x2F;&#x2F;docs.github.com&#x2F;en&#x2F;authentication&#x2F;keeping-your-account-and-data-secure&#x2F;managing-your-personal-access-tokens&quot;&gt;Link&lt;&#x2F;a&gt;)&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# On every push this script is executed
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;on&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;push&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;branches&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;      - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;main
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;permissions&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;contents&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;read
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Build and deploy GH Pages
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;jobs&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;build&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;runs-on&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;ubuntu-latest
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;github.ref == &amp;#39;refs&#x2F;heads&#x2F;main&amp;#39;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;steps&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;      - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Checkout source repository
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;uses&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;actions&#x2F;checkout@v4
+&lt;&#x2F;span&gt;&lt;span&gt;      
+&lt;&#x2F;span&gt;&lt;span&gt;      - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Install Zola
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;run&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;|
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;          curl -L https:&#x2F;&#x2F;github.com&#x2F;getzola&#x2F;zola&#x2F;releases&#x2F;download&#x2F;v0.18.0&#x2F;zola-v0.18.0-x86_64-unknown-linux-gnu.tar.gz | tar xz
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;          sudo mv zola &#x2F;usr&#x2F;local&#x2F;bin
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;      
+&lt;&#x2F;span&gt;&lt;span&gt;      - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Build Zola site
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;run&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;zola build
+&lt;&#x2F;span&gt;&lt;span&gt;      
+&lt;&#x2F;span&gt;&lt;span&gt;      - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Deploy to vjay15.github.io repository
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;uses&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;peaceiris&#x2F;actions-gh-pages@v3
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;with&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;personal_token&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;${{ secrets.DEPLOY_TOKEN }}
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;external_repository&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Vjay15&#x2F;vjay15.github.io
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;publish_dir&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;.&#x2F;public
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;publish_branch&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;main
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;user_name&lt;&#x2F;span&gt;&lt;span&gt;: &amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;github-actions[bot]&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;user_email&lt;&#x2F;span&gt;&lt;span&gt;: &amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;github-actions[bot]@users.noreply.github.com&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;In case you are publishing this website to elsewhere I suggest you to check the documentation: &lt;a href=&quot;https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;github-pages&#x2F;&quot;&gt;Link&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;This will run and deploy the page automatically the moment you push code to the repository. With that we have now successfully built a static site using Zola from scratch!
+Another feature of Zola just like other SSGs is that you can use a pre-existing theme and use it instead. I like to control how the page looks by myself and keep it minimalistic, therefore I created the structure and just made AI write the styles hehe.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;optional-adding-giscus-for-comments&quot;&gt;Optional: Adding Giscus for comments&lt;&#x2F;h3&gt;
+&lt;p&gt;I have added Giscus to all the blog pages in my website so I can receive comments, therefore I will also add on how to add Giscus. Giscus is a comments system built using Github Discussions. The comments are all tracked in a separate repository that is created by you, so it&#x27;s entirely under your control!&lt;&#x2F;p&gt;
+&lt;p&gt;Here are the steps to add Giscus to your website:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Create a repository, can be named anything but name it in a way you can remember it, the repository should be public&lt;&#x2F;li&gt;
+&lt;li&gt;Go to Giscus app &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;apps&#x2F;giscus&quot;&gt;page&lt;&#x2F;a&gt;, install it in the new repository created by choosing the option Selected repositories -&amp;gt; The repository you have created.&lt;&#x2F;li&gt;
+&lt;li&gt;Enable the Discuss feature, &lt;a href=&quot;https:&#x2F;&#x2F;docs.github.com&#x2F;en&#x2F;github&#x2F;administering-a-repository&#x2F;managing-repository-settings&#x2F;enabling-or-disabling-github-discussions-for-a-repository&quot;&gt;Reference&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;After this go to the Giscus &lt;a href=&quot;https:&#x2F;&#x2F;giscus.app&#x2F;&quot;&gt;website&lt;&#x2F;a&gt; and enter the information it asks for, if you don&#x27;t want to read through it just scroll down and under repository enter your &lt;code&gt;username&#x2F;repositoryname&lt;&#x2F;code&gt;, it will show a green tick if your repository is configured properly. Scroll down copy the &lt;code&gt;&amp;lt;script&amp;gt;&lt;&#x2F;code&gt; code which looks like:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;js&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-js &quot;&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;script src&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;https:&#x2F;&#x2F;giscus.app&#x2F;client.js&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;repo&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;[ENTER REPO HERE]&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;repo&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;id&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;[ENTER REPO ID HERE]&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;category&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;[ENTER CATEGORY NAME HERE]&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;category&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;id&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;[ENTER CATEGORY ID HERE]&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;mapping&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;pathname&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;strict&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;reactions&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;enabled&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;emit&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;metadata&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;input&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;position&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;bottom&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;theme&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;preferred_color_scheme&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;lang&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;en&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;crossorigin&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;anonymous&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;async&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
+&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;script&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The values will be autofilled since you had already given the username&#x2F;repositoryname. This copied code can be appended to the template for your blog, in my case it&#x27;s in blog.html and voila! the comment box is there along with a reaction button :D&lt;&#x2F;p&gt;
+&lt;p&gt;I hope you guys learnt something out of this, do make your own profile&#x2F;blog page its fun to learn stuff and share it to people!&lt;&#x2F;p&gt;
+&lt;p&gt;More random blogs coming soon so stay tuned! Have an epic day.&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;link-to-the-repository-link&quot;&gt;Link to the repository: &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;Vjay15&#x2F;MyWebsite_Zola_files&quot;&gt;Link&lt;&#x2F;a&gt;&lt;&#x2F;h4&gt;
+</content>
+        
+    </entry>
+</feed>
