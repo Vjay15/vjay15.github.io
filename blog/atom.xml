@@ -52,12 +52,12 @@
 &lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; Do you want to enable syntax highlighting? [y&#x2F;N]: y
 &lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; Do you want to build a search index of the content? [y&#x2F;N]: y
 &lt;&#x2F;span&gt;&lt;span&gt;
-&lt;&#x2F;span&gt;&lt;span&gt;Done! Your site was created in &#x2F;Users&#x2F;vjay&#x2F;vjay15.github.io
+&lt;&#x2F;span&gt;&lt;span&gt;Done! Your site was created in &#x2F;Users&#x2F;vjay&#x2F;MyWebsite_Zola_Files
 &lt;&#x2F;span&gt;&lt;span&gt;
 &lt;&#x2F;span&gt;&lt;span&gt;Get started by moving into the directory and using the built-in server: `zola serve`
 &lt;&#x2F;span&gt;&lt;span&gt;Visit https:&#x2F;&#x2F;www.getzola.org for the full documentation.
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;The URL of the site is the default URL of your website, SASS is a preprocessor that allows you to use advanced features like variables, nesting etc. If you want to enable it, since I am using vanilla CSS I have disabled it. Syntax highlighting is used for codeblocks and search index allows for easy indexing of your pages for SEO optimization.&lt;&#x2F;p&gt;
+&lt;p&gt;The URL of the site is the default URL of your website, SASS is a preprocessor that allows you to use advanced features like variables, nesting etc. If you want to, enable it. Since I am using vanilla CSS I have disabled it. Syntax highlighting is used for codeblocks and search index allows for easy indexing of your pages for SEO optimization.&lt;&#x2F;p&gt;
 &lt;h2 id=&quot;working-with-zola&quot;&gt;Working with Zola&lt;&#x2F;h2&gt;
 &lt;p&gt;After you have successfully set up Zola you will end up with the directory structure like this&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span&gt; tree                                                                                                                                                                        
@@ -84,7 +84,15 @@
 &lt;li&gt;The blog.html is the page which is the base structure for all the blogs&lt;&#x2F;li&gt;
 &lt;&#x2F;ul&gt;
 &lt;p&gt;The page URLs are constructed based on the name of the markdown files, so for example if you take my about me page the markdown name is about.md, it is constructed like
-&lt;code&gt;https:&#x2F;&#x2F;vjay15.github.io&#x2F;about&lt;&#x2F;code&gt;. For sections it will be &lt;code&gt;https:&#x2F;&#x2F;example.com&#x2F;section&#x2F;&amp;lt;md_filename&amp;gt;&lt;&#x2F;code&gt;. Therefore be careful in naming your md files. The page titles for the navbar are stored in config.toml&lt;&#x2F;p&gt;
+&lt;code&gt;https:&#x2F;&#x2F;vjay15.github.io&#x2F;about&lt;&#x2F;code&gt;. For sections you have a _index.md present in each of them which will specify the name of the section, ordering etc, etc like \&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#2b303b;color:#c0c5ce;&quot;&gt;&lt;code&gt;&lt;span&gt;+++
+&lt;&#x2F;span&gt;&lt;span&gt;title = &amp;quot;Blog&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;sort_by = &amp;quot;date&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;template = &amp;quot;section.html&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;generate_feeds=true
+&lt;&#x2F;span&gt;&lt;span&gt;+++
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The url for sections will thus be &lt;code&gt;https:&#x2F;&#x2F;example.com&#x2F;section&#x2F;&amp;lt;md_filename&amp;gt;&lt;&#x2F;code&gt;. Therefore be careful in naming your md files. The page titles for the navbar are stored in config.toml&lt;&#x2F;p&gt;
 &lt;pre style=&quot;background-color:#2b303b;color:#c0c5ce;&quot;&gt;&lt;code&gt;&lt;span&gt; # Navigation items for navbar
 &lt;&#x2F;span&gt;&lt;span&gt;navbar_items = [
 &lt;&#x2F;span&gt;&lt;span&gt;    { name = &amp;quot;About&amp;quot;, url = &amp;quot;&#x2F;about&amp;quot; },
@@ -157,7 +165,7 @@ Another feature of Zola just like other SSGs is that you can use a pre-existing 
 &lt;li&gt;Go to Giscus app &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;apps&#x2F;giscus&quot;&gt;page&lt;&#x2F;a&gt;, install it in the new repository created by choosing the option Selected repositories -&amp;gt; The repository you have created.&lt;&#x2F;li&gt;
 &lt;li&gt;Enable the Discuss feature, &lt;a href=&quot;https:&#x2F;&#x2F;docs.github.com&#x2F;en&#x2F;github&#x2F;administering-a-repository&#x2F;managing-repository-settings&#x2F;enabling-or-disabling-github-discussions-for-a-repository&quot;&gt;Reference&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
 &lt;&#x2F;ul&gt;
-&lt;p&gt;After this go to the Giscus &lt;a href=&quot;https:&#x2F;&#x2F;giscus.app&#x2F;&quot;&gt;website&lt;&#x2F;a&gt; and enter the information it asks for, if you don&#x27;t want to read through it just scroll down and under repository enter your &lt;code&gt;username&#x2F;repositoryname&lt;&#x2F;code&gt;, it will show a green tick if your repository is configured properly. Scroll down copy the &lt;code&gt;&amp;lt;script&amp;gt;&lt;&#x2F;code&gt; code which looks like:&lt;&#x2F;p&gt;
+&lt;p&gt;After this visit the Giscus &lt;a href=&quot;https:&#x2F;&#x2F;giscus.app&#x2F;&quot;&gt;website&lt;&#x2F;a&gt; and enter the information it asks for, if you don&#x27;t want to read through it just scroll down and under the repository field enter your &lt;code&gt;username&#x2F;repositoryname&lt;&#x2F;code&gt;, it will show a green tick if your repository is configured properly. Scroll down copy the &lt;code&gt;&amp;lt;script&amp;gt;&lt;&#x2F;code&gt; code which looks like:&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;js&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-js &quot;&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;script src&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;https:&#x2F;&#x2F;giscus.app&#x2F;client.js&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
 &lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;repo&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;[ENTER REPO HERE]&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
 &lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;repo&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;id&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;[ENTER REPO ID HERE]&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;

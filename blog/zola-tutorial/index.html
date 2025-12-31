@@ -89,12 +89,12 @@
 </span><span>&gt; Do you want to enable syntax highlighting? [y/N]: y
 </span><span>&gt; Do you want to build a search index of the content? [y/N]: y
 </span><span>
-</span><span>Done! Your site was created in /Users/vjay/vjay15.github.io
+</span><span>Done! Your site was created in /Users/vjay/MyWebsite_Zola_Files
 </span><span>
 </span><span>Get started by moving into the directory and using the built-in server: `zola serve`
 </span><span>Visit https://www.getzola.org for the full documentation.
 </span></code></pre>
-<p>The URL of the site is the default URL of your website, SASS is a preprocessor that allows you to use advanced features like variables, nesting etc. If you want to enable it, since I am using vanilla CSS I have disabled it. Syntax highlighting is used for codeblocks and search index allows for easy indexing of your pages for SEO optimization.</p>
+<p>The URL of the site is the default URL of your website, SASS is a preprocessor that allows you to use advanced features like variables, nesting etc. If you want to, enable it. Since I am using vanilla CSS I have disabled it. Syntax highlighting is used for codeblocks and search index allows for easy indexing of your pages for SEO optimization.</p>
 <h2 id="working-with-zola">Working with Zola</h2>
 <p>After you have successfully set up Zola you will end up with the directory structure like this</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">$</span><span> tree                                                                                                                                                                        
@@ -121,7 +121,15 @@
 <li>The blog.html is the page which is the base structure for all the blogs</li>
 </ul>
 <p>The page URLs are constructed based on the name of the markdown files, so for example if you take my about me page the markdown name is about.md, it is constructed like
-<code>https://vjay15.github.io/about</code>. For sections it will be <code>https://example.com/section/&lt;md_filename&gt;</code>. Therefore be careful in naming your md files. The page titles for the navbar are stored in config.toml</p>
+<code>https://vjay15.github.io/about</code>. For sections you have a _index.md present in each of them which will specify the name of the section, ordering etc, etc like \</p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>+++
+</span><span>title = &quot;Blog&quot;
+</span><span>sort_by = &quot;date&quot;
+</span><span>template = &quot;section.html&quot;
+</span><span>generate_feeds=true
+</span><span>+++
+</span></code></pre>
+<p>The url for sections will thus be <code>https://example.com/section/&lt;md_filename&gt;</code>. Therefore be careful in naming your md files. The page titles for the navbar are stored in config.toml</p>
 <pre style="background-color:#2b303b;color:#c0c5ce;"><code><span> # Navigation items for navbar
 </span><span>navbar_items = [
 </span><span>    { name = &quot;About&quot;, url = &quot;/about&quot; },
@@ -194,7 +202,7 @@ Another feature of Zola just like other SSGs is that you can use a pre-existing 
 <li>Go to Giscus app <a href="https://github.com/apps/giscus">page</a>, install it in the new repository created by choosing the option Selected repositories -&gt; The repository you have created.</li>
 <li>Enable the Discuss feature, <a href="https://docs.github.com/en/github/administering-a-repository/managing-repository-settings/enabling-or-disabling-github-discussions-for-a-repository">Reference</a></li>
 </ul>
-<p>After this go to the Giscus <a href="https://giscus.app/">website</a> and enter the information it asks for, if you don't want to read through it just scroll down and under repository enter your <code>username/repositoryname</code>, it will show a green tick if your repository is configured properly. Scroll down copy the <code>&lt;script&gt;</code> code which looks like:</p>
+<p>After this visit the Giscus <a href="https://giscus.app/">website</a> and enter the information it asks for, if you don't want to read through it just scroll down and under the repository field enter your <code>username/repositoryname</code>, it will show a green tick if your repository is configured properly. Scroll down copy the <code>&lt;script&gt;</code> code which looks like:</p>
 <pre data-lang="js" style="background-color:#2b303b;color:#c0c5ce;" class="language-js "><code class="language-js" data-lang="js"><span>&lt;</span><span style="color:#bf616a;">script src</span><span>=&quot;</span><span style="color:#a3be8c;">https://giscus.app/client.js</span><span>&quot;
 </span><span>        </span><span style="color:#bf616a;">data</span><span>-</span><span style="color:#bf616a;">repo</span><span>=&quot;</span><span style="color:#a3be8c;">[ENTER REPO HERE]</span><span>&quot;
 </span><span>        </span><span style="color:#bf616a;">data</span><span>-</span><span style="color:#bf616a;">repo</span><span>-</span><span style="color:#bf616a;">id</span><span>=&quot;</span><span style="color:#a3be8c;">[ENTER REPO ID HERE]</span><span>&quot;
