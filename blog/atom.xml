@@ -4,8 +4,99 @@
     <link rel="self" type="application/atom+xml" href="https://vjay15.github.io/blog/atom.xml"/>
     <link rel="alternate" type="text/html" href="https://vjay15.github.io/blog/"/>
     <generator uri="https://www.getzola.org/">Zola</generator>
-    <updated>2025-12-31T00:00:00+00:00</updated>
+    <updated>2026-04-12T00:00:00+00:00</updated>
     <id>https://vjay15.github.io/blog/atom.xml</id>
+    <entry xml:lang="en">
+        <title>My adventure in designing API keys</title>
+        <published>2026-04-12T00:00:00+00:00</published>
+        <updated>2026-04-12T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            Vjaylakshman K
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://vjay15.github.io/blog/apikeys/"/>
+        <id>https://vjay15.github.io/blog/apikeys/</id>
+        
+        <content type="html" xml:base="https://vjay15.github.io/blog/apikeys/">&lt;p&gt;Hello everyone, It has been quite a long time since my last blog, the last couple of months had been very busy and packed with a lot of work so I barely had much time to write blogs. Time runs so fast that the last time when I wrote a blog I was still a DevOps Engineer and now I am a Product Developer lol.&lt;&#x2F;p&gt;
+&lt;p&gt;This time we are going to look into API keys, of which I found very few articles that explained how it worked, So I thought why not write a blog on whatever I have learnt from my research! This blog focuses on the API key creation and design.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;api-keys&quot;&gt;API keys&lt;&#x2F;h2&gt;
+&lt;p&gt;API keys are exactly what they sound like. A token to access the API by authenticating and authorizing yourself without the need for sessions. These are used for public APIs that allow users to directly call the endpoints and get their response directly.&lt;&#x2F;p&gt;
+&lt;p&gt;Sounds simple enough? so all it is, is just a string that allows you to authenticate yourself! But I was not happy with this answer, so I decided to dig further. The reason is very simple, I am just curious and love to research a topic thoroughly before implementing.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;format-of-api-keys&quot;&gt;Format of API Keys&lt;&#x2F;h2&gt;
+&lt;p&gt;API keys are usually formatted in this way.&lt;&#x2F;p&gt;
+&lt;img src=&quot;&#x2F;images&#x2F;sample_token.png&quot; alt=&quot;Sample API key&quot; width=&quot;600&quot; style=&quot;display: block; margin: 0 auto;&quot; &#x2F;&gt;
+&lt;br&gt;
+&lt;p&gt;The prefix is just extra metadata that is useful for the end user as well as the developer to figure out the kind of API key it is. For example github uses the gh(o|p) prefix, stripe uses sk_live or sk_test prefix.&lt;&#x2F;p&gt;
+&lt;p&gt;The next few characters in my example key is just random hex string whose length could vary across implementations. And at last either clubbed together with the hex string or separated by an &#x27;_&#x27; is the checksum. The reason behind having a checksum is that it allows you to verify first whether this API key is even valid before hitting the DB, since either there could be a mistype by the user or maybe a missed character.&lt;&#x2F;p&gt;
+&lt;p&gt;This is the most widely followed industry format for API keys. There can be special cases such as when some part of the prefix of hex characters can be just a unique hex ID of a single account. I will further explain the reason behind why this is done.&lt;&#x2F;p&gt;
+&lt;p&gt;These API keys are then hashed and stored in the DB, therefore once created, it has to be copied or it&#x27;s lost forever. This makes it secure since it&#x27;s now hashed, just like a password, so the contents are unknown to everyone who has access to the system. This is why most of the systems that support API keys, ask you to copy it after creation.&lt;&#x2F;p&gt;
+&lt;p&gt;Some APIs store just the first few characters of the API key to help you distinguish between multiple API keys easily. Further you can add permissions, API call logging per key etc.. the implementation is pretty straightforward.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;the-hurdle-i-faced&quot;&gt;The hurdle I faced&lt;&#x2F;h2&gt;
+&lt;p&gt;I am working on a multi tenant based system with sharding. The public API has to be integrated into the existing backend workflow, and all the user data is stored in different shards and so are the API key hashes and related tables.&lt;&#x2F;p&gt;
+&lt;p&gt;The problem I encountered was how can I route the request to the correct DB Shard? since before we had session cookies that had the account IDs which can be used to find out which shard the account belongs to based on the metashard&#x27;s mapping tables.&lt;&#x2F;p&gt;
+&lt;p&gt;So I had to do a bit of research, trying to manage this mapping over time and what could be the approaches through which I can fix the problem I have at hand.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;approach-1-just-map-the-hashes-to-the-account-id-in-the-metashard&quot;&gt;Approach - 1 - Just map the hashes to the account ID in the metashard&lt;&#x2F;h3&gt;
+&lt;p&gt;This is the default approach, just take the hashes of the API keys and directly map it to the account ID. It was good enough, the performance wasn&#x27;t that bad when I tested it with around 20 Million records, where it gave a really good read and write speeds.&lt;&#x2F;p&gt;
+&lt;p&gt;But I was not really happy with it, since it felt that I was repeating myself here, why do we have to store the entire hash when all we need is to map the API key to the account. Therefore, I looked into more approaches apart from this.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;approach-2-the-prefix-approach&quot;&gt;Approach - 2 - The prefix approach&lt;&#x2F;h3&gt;
+&lt;p&gt;Let us say that we assign a company an unique API key prefix, and whenever they create an API key, the first few characters of the hex will always be the unique prefix and the rest random hex characters, a very sensible and easy approach to solving this issue.&lt;&#x2F;p&gt;
+&lt;p&gt;Then this unique API key prefix can be stored in a table in the metashard and mapped to the account id, then this ID can be used to find out the shard ID. This is also comparable in performance compared to the 1st Approach, but the sizes of the indices and the overall table memory is reduced.&lt;&#x2F;p&gt;
+&lt;p&gt;This comes at the cost of making the prefix predictable and increasing the chances of collision of hashes, but it is very miniscule that it can be overlooked. I didn&#x27;t proceed with this approach since I don&#x27;t want the API keys to have any info regarding the account, but hey it is all just a matter of preference and opinion.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;approach-3-encode-the-hash&quot;&gt;Approach - 3 - Encode the Hash?&lt;&#x2F;h3&gt;
+&lt;p&gt;I was trying to figure out more approaches myself along with Claude, I came up with the base idea of what if we use another encoding algorithm such as base64 to encode the string and use the first few characters to map it to the account, since base64 is always different for different hashes.&lt;&#x2F;p&gt;
+&lt;p&gt;I initially worked out with a working POC of a base62 approach which generated a 10 character encoded string which gave really good results, then tried with a base70 approach where I added 8 more symbols (API key safe) to the existing 62 characters and reduced it to 8 character encoded strings, which not only reduced the size but also the lookup times.&lt;&#x2F;p&gt;
+&lt;p&gt;But this is when I found out that the test bench had a very critical flaw. When comparing to the initial hash to account ID approach, I measured the direct hash to account ID mapping with the TCP connection time thus it gave inflated values for the full SHA appraoch since it was measured first. I had to correct myself and I retested.&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;(RTT = round-trip time for the request; PG med = median Postgres time in my benchmark.) All the tests that are run in this blog are done for 1 Million records with 1000 test API keys and 100 runs each and the hash&#x2F;encoded string column is indexed using B-Tree&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Approach&lt;&#x2F;th&gt;&lt;th&gt;RTT med (ms)&lt;&#x2F;th&gt;&lt;th&gt;PG med (ms)&lt;&#x2F;th&gt;&lt;&#x2F;tr&gt;&lt;&#x2F;thead&gt;&lt;tbody&gt;
+&lt;tr&gt;&lt;td&gt;Full SHA-256 (64 char)&lt;&#x2F;td&gt;&lt;td&gt;0.222&lt;&#x2F;td&gt;&lt;td&gt;0.006&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td&gt;Base-62 x 10&lt;&#x2F;td&gt;&lt;td&gt;0.779&lt;&#x2F;td&gt;&lt;td&gt;0.044&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td&gt;Base-70 x 8&lt;&#x2F;td&gt;&lt;td&gt;0.330&lt;&#x2F;td&gt;&lt;td&gt;0.005&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;&#x2F;tbody&gt;&lt;&#x2F;table&gt;
+&lt;p&gt;My eyes could not believe the tests, I looked into the test scripts, re-ran the tests more to verify whether this was not a fluke and I was confused so much.&lt;&#x2F;p&gt;
+&lt;p&gt;After much digging into the cause behind it, I found the two reasons behind this&lt;&#x2F;p&gt;
+&lt;p&gt;1.) &lt;strong&gt;B-Tree is very efficient for strings as well&lt;&#x2F;strong&gt;: B tree index in PostgreSQL is good for any data as long as they are sortable. My assumption that reducing the size of the string will increase the lookup time is baseless, since the key hashes are strings that can be sorted, and if they can be sorted they can definitely be easily looked up in the Database just like any other sortable values like Integers.&lt;&#x2F;p&gt;
+&lt;p&gt;Then even if the SHA hash differs and is big, it still is just a node in the tree that can be looked up easily. This is why the SHA performed better.&lt;&#x2F;p&gt;
+&lt;p&gt;2.) &lt;strong&gt;BigInt Operations in Javascript are slow&lt;&#x2F;strong&gt;: The Base-62 and Base-70 conversion was done via repeated BigInt division&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;js&quot; class=&quot;language-js &quot;&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;const hash = crypto.createHash(&amp;#x27;sha256&amp;#x27;).update(input).digest(&amp;#x27;hex&amp;#x27;);
+let num = BigInt(&amp;#x27;0x&amp;#x27; + hash);   &amp;#x2F;&amp;#x2F; ← convert 64-char hex string to a BigInt
+let result = &amp;#x27;&amp;#x27;;
+while (num &amp;gt; 0n) {               &amp;#x2F;&amp;#x2F; ← repeated BigInt division in a loop
+  result = BASE62[Number(num % 62n)] + result;
+  num &amp;#x2F;= 62n;
+}
+return result.slice(0, length);
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The reason being that BigInts use arbitrary-precision math implemented in software, unlike normal number types that map to hardware-native floats and integers. That software path tends to allocate more on the heap than a simple hash comparison would.&lt;&#x2F;p&gt;
+&lt;p&gt;Another issue is that not just am I doing one of the slowest operations using BigInt but also 43 times, despite only needing the first 10 or 8 characters, this resulted in the worse performance overall compared to just simple hash.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;final-approach-shake-hash-algorithm&quot;&gt;Final Approach - SHAKE hash algorithm&lt;&#x2F;h3&gt;
+&lt;p&gt;The final algorithm that I chose is the newest family of SHA algorithm, SHA3 and a variant of it called SHAKE. SHA3 algorithm was a bit different from the traditional SHA2 (SHA-256 etc) where instead of trying to create fixed size blocks based on the type of algorithm, here we try to absorb the entire text into a 1600 unit block like a sponge.&lt;&#x2F;p&gt;
+&lt;p&gt;I tried digging into the implementation, and understood some of it. I will let the existing articles explain this since they do a better job than I would here.&lt;&#x2F;p&gt;
+&lt;p&gt;This sponge style algorithm allows us to get fixed size outputs of any length, you can just squeeze out the bits you need and nothing more, similar to the prefix approach but now I don&#x27;t do the full generate and slice approach. Therefore this was a better approach than my previous encoding style approach and the overall performance was great as well!&lt;&#x2F;p&gt;
+&lt;p&gt;Gave the same amount of performance just like the Full SHA hash but now both computation cost and the index size is reduced. The representation is now base64url instead of hex (only 16 characters) thus increases the overall possibility of API keys being created.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;em&gt;(Same column meanings as the first benchmark table.)&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Approach&lt;&#x2F;th&gt;&lt;th&gt;RTT med&lt;&#x2F;th&gt;&lt;th&gt;PG med&lt;&#x2F;th&gt;&lt;&#x2F;tr&gt;&lt;&#x2F;thead&gt;&lt;tbody&gt;
+&lt;tr&gt;&lt;td&gt;SHAKE256 32B → b64url&lt;&#x2F;td&gt;&lt;td&gt;0.189&lt;&#x2F;td&gt;&lt;td&gt;0.005&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td&gt;SHAKE256 32B b64url prefix 8&lt;&#x2F;td&gt;&lt;td&gt;0.113&lt;&#x2F;td&gt;&lt;td&gt;0.004&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td&gt;SHAKE256 32B b64url prefix 10&lt;&#x2F;td&gt;&lt;td&gt;0.185&lt;&#x2F;td&gt;&lt;td&gt;0.005&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td&gt;SHAKE256 32B b64url prefix 12&lt;&#x2F;td&gt;&lt;td&gt;0.120&lt;&#x2F;td&gt;&lt;td&gt;0.004&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td&gt;SHAKE256 6B → b64url (8 chars)&lt;&#x2F;td&gt;&lt;td&gt;0.146&lt;&#x2F;td&gt;&lt;td&gt;0.005&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td&gt;SHAKE256 7B → b64url (10 chars)&lt;&#x2F;td&gt;&lt;td&gt;0.150&lt;&#x2F;td&gt;&lt;td&gt;0.005&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td&gt;SHAKE256 9B → b64url (12 chars)&lt;&#x2F;td&gt;&lt;td&gt;0.172&lt;&#x2F;td&gt;&lt;td&gt;0.005&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;&#x2F;tbody&gt;&lt;&#x2F;table&gt;
+&lt;p&gt;I didn&#x27;t base the decision only on performance but also on the possibility of hash collisions, which can be estimated using the &lt;a href=&quot;https:&#x2F;&#x2F;brilliant.org&#x2F;wiki&#x2F;birthday-paradox&#x2F;&quot;&gt;birthday paradox&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;For 8 characters there can be around 281 Trillion possibilities but 10 characters had around 72 Quintillion possibilities, the chances of collision happening are near zero for 10 characters, therefore I went with the 10 character encoding of the generated hash.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;&#x2F;h2&gt;
+&lt;p&gt;Having to work on an actual problem in real life taught me about how much mistakes I make and also the many assumptions I do, it has helped me figure out the ways in which I can increase my clarity in a problem and how to make proper POC and research about it.&lt;&#x2F;p&gt;
+&lt;p&gt;This was such a good learning experience for me about not just API key design but also how B tree index works for strings, how hash algorithm works and also how slow BigInt operations can be.&lt;&#x2F;p&gt;
+&lt;p&gt;At the end of the day we have an API key system that is working :D Thanks for reading this blog, I hope you all have a nice day :)&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
     <entry xml:lang="en">
         <title>Reflecting on the past year</title>
         <published>2025-12-31T00:00:00+00:00</published>
@@ -89,40 +180,40 @@ Channeling energy to my thoughts, attain symmetry&quot;&lt;&#x2F;p&gt;
 &lt;p&gt;Honestly, any SSG should get your job done, but I wanted to use something simple and since Zola was also written in rust, I wanted to try it out!&lt;&#x2F;p&gt;
 &lt;h2 id=&quot;setting-up-zola&quot;&gt;Setting up Zola&lt;&#x2F;h2&gt;
 &lt;p&gt;The Documentation had already provided the ways in which Zola could be installed, and I was using a Mac in order to set it up, therefore I used brew to download Zola&lt;&#x2F;p&gt;
-&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;brew&lt;&#x2F;span&gt;&lt;span&gt; install zola
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;brew install zola
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;&lt;strong&gt;Note:&lt;&#x2F;strong&gt; &lt;a href=&quot;https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;installation&#x2F;&quot;&gt;Installation Page&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
 &lt;p&gt;Since I am hosting this on github pages, I created a repository with my username &quot;vjay15.github.io&quot; and another repository where the website files are hosted, you can have a gitignore, otherwise it could be left empty. Clone the repositories locally and cd to the directory (The present working directory should be the website file repository&#x27;s folder), then&lt;&#x2F;p&gt;
-&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;zola&lt;&#x2F;span&gt;&lt;span&gt; init &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;#in case you have added LICENSE do -f
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;zola init #in case you have added LICENSE do -f
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;Which should result in Zola asking a few questions to initialise your page&lt;&#x2F;p&gt;
-&lt;pre style=&quot;background-color:#2b303b;color:#c0c5ce;&quot;&gt;&lt;code&gt;&lt;span&gt;Welcome to Zola!
-&lt;&#x2F;span&gt;&lt;span&gt;Please answer a few questions to get started quickly.
-&lt;&#x2F;span&gt;&lt;span&gt;Any choices made can be changed by modifying the `config.toml` file later.
-&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; What is the URL of your site? (https:&#x2F;&#x2F;example.com): https:&#x2F;&#x2F;vjay15.github.io
-&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; Do you want to enable Sass compilation? [Y&#x2F;n]: n
-&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; Do you want to enable syntax highlighting? [y&#x2F;N]: y
-&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; Do you want to build a search index of the content? [y&#x2F;N]: y
-&lt;&#x2F;span&gt;&lt;span&gt;
-&lt;&#x2F;span&gt;&lt;span&gt;Done! Your site was created in &#x2F;Users&#x2F;vjay&#x2F;MyWebsite_Zola_Files
-&lt;&#x2F;span&gt;&lt;span&gt;
-&lt;&#x2F;span&gt;&lt;span&gt;Get started by moving into the directory and using the built-in server: `zola serve`
-&lt;&#x2F;span&gt;&lt;span&gt;Visit https:&#x2F;&#x2F;www.getzola.org for the full documentation.
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre&gt;&lt;code&gt;Welcome to Zola!
+Please answer a few questions to get started quickly.
+Any choices made can be changed by modifying the `config.toml` file later.
+&amp;gt; What is the URL of your site? (https:&amp;#x2F;&amp;#x2F;example.com): https:&amp;#x2F;&amp;#x2F;vjay15.github.io
+&amp;gt; Do you want to enable Sass compilation? [Y&amp;#x2F;n]: n
+&amp;gt; Do you want to enable syntax highlighting? [y&amp;#x2F;N]: y
+&amp;gt; Do you want to build a search index of the content? [y&amp;#x2F;N]: y
+
+Done! Your site was created in &amp;#x2F;Users&amp;#x2F;vjay&amp;#x2F;MyWebsite_Zola_Files
+
+Get started by moving into the directory and using the built-in server: `zola serve`
+Visit https:&amp;#x2F;&amp;#x2F;www.getzola.org for the full documentation.
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;The URL of the site is the default URL of your website, SASS is a preprocessor that allows you to use advanced features like variables, nesting etc. If you want to, enable it. Since I am using vanilla CSS I have disabled it. Syntax highlighting is used for codeblocks and search index allows for easy indexing of your pages for SEO optimization.&lt;&#x2F;p&gt;
 &lt;h2 id=&quot;working-with-zola&quot;&gt;Working with Zola&lt;&#x2F;h2&gt;
 &lt;p&gt;After you have successfully set up Zola you will end up with the directory structure like this&lt;&#x2F;p&gt;
-&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span&gt; tree                                                                                                                                                                        
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;.
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;├──&lt;&#x2F;span&gt;&lt;span&gt; LICENSE
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;├──&lt;&#x2F;span&gt;&lt;span&gt; config.toml
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;├──&lt;&#x2F;span&gt;&lt;span&gt; content
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;├──&lt;&#x2F;span&gt;&lt;span&gt; static
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;├──&lt;&#x2F;span&gt;&lt;span&gt; templates
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;└──&lt;&#x2F;span&gt;&lt;span&gt; themes
-&lt;&#x2F;span&gt;&lt;span&gt;
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;5&lt;&#x2F;span&gt;&lt;span&gt; directories, 2 files
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;$ tree                                                                                                                                                                        
+.
+├── LICENSE
+├── config.toml
+├── content
+├── static
+├── templates
+└── themes
+
+5 directories, 2 files
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;I am not going to be explaining in detail about what each of these directories and files do, because the Overview page of Zola docs does a better job at it so do check it out.&lt;&#x2F;p&gt;
 &lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;overview&#x2F;&quot;&gt;Overview Page&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
 &lt;p&gt;Now that you&#x27;ve read that you might have got the basic idea behind how Zola helps us organise our content using Markdown and HTML. Now I will explain the rest in a short manner, I might be skipping a lot of details here so I again suggest you to go read the docs if you want in depth explanation.&lt;&#x2F;p&gt;
@@ -137,75 +228,75 @@ Channeling energy to my thoughts, attain symmetry&quot;&lt;&#x2F;p&gt;
 &lt;&#x2F;ul&gt;
 &lt;p&gt;The page URLs are constructed based on the name of the markdown files, so for example if you take my about me page the markdown name is about.md, it is constructed like
 &lt;code&gt;https:&#x2F;&#x2F;vjay15.github.io&#x2F;about&lt;&#x2F;code&gt;. For sections you have a _index.md present in each of them which will specify the name of the section, ordering etc, etc like \&lt;&#x2F;p&gt;
-&lt;pre style=&quot;background-color:#2b303b;color:#c0c5ce;&quot;&gt;&lt;code&gt;&lt;span&gt;+++
-&lt;&#x2F;span&gt;&lt;span&gt;title = &amp;quot;Blog&amp;quot;
-&lt;&#x2F;span&gt;&lt;span&gt;sort_by = &amp;quot;date&amp;quot;
-&lt;&#x2F;span&gt;&lt;span&gt;template = &amp;quot;section.html&amp;quot;
-&lt;&#x2F;span&gt;&lt;span&gt;generate_feeds=true
-&lt;&#x2F;span&gt;&lt;span&gt;+++
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre&gt;&lt;code&gt;+++
+title = &amp;quot;Blog&amp;quot;
+sort_by = &amp;quot;date&amp;quot;
+template = &amp;quot;section.html&amp;quot;
+generate_feeds=true
++++
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;The url for sections will thus be &lt;code&gt;https:&#x2F;&#x2F;example.com&#x2F;section&#x2F;&amp;lt;md_filename&amp;gt;&lt;&#x2F;code&gt;. Therefore be careful in naming your md files. The page titles for the navbar are stored in config.toml&lt;&#x2F;p&gt;
-&lt;pre style=&quot;background-color:#2b303b;color:#c0c5ce;&quot;&gt;&lt;code&gt;&lt;span&gt; # Navigation items for navbar
-&lt;&#x2F;span&gt;&lt;span&gt;navbar_items = [
-&lt;&#x2F;span&gt;&lt;span&gt;    { name = &amp;quot;About&amp;quot;, url = &amp;quot;&#x2F;about&amp;quot; },
-&lt;&#x2F;span&gt;&lt;span&gt;    { name = &amp;quot;Portfolio&amp;quot;, url = &amp;quot;&#x2F;portfolio&amp;quot; },
-&lt;&#x2F;span&gt;&lt;span&gt;    { name = &amp;quot;Blog&amp;quot;, url = &amp;quot;&#x2F;blog&amp;quot; },
-&lt;&#x2F;span&gt;&lt;span&gt;    { name=&amp;quot;Bucket List&amp;quot;, url=&amp;quot;&#x2F;bucketlist&amp;quot;}
-&lt;&#x2F;span&gt;&lt;span&gt;]
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre&gt;&lt;code&gt; # Navigation items for navbar
+navbar_items = [
+    { name = &amp;quot;About&amp;quot;, url = &amp;quot;&amp;#x2F;about&amp;quot; },
+    { name = &amp;quot;Portfolio&amp;quot;, url = &amp;quot;&amp;#x2F;portfolio&amp;quot; },
+    { name = &amp;quot;Blog&amp;quot;, url = &amp;quot;&amp;#x2F;blog&amp;quot; },
+    { name=&amp;quot;Bucket List&amp;quot;, url=&amp;quot;&amp;#x2F;bucketlist&amp;quot;}
+]
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;and is displayed by looping through the items, in the base.html file&lt;&#x2F;p&gt;
-&lt;pre data-lang=&quot;html&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-html &quot;&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;&lt;span&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;nav&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
-&lt;&#x2F;span&gt;&lt;span&gt;    &amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;div &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;class&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;nav-container&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;&amp;gt;
-&lt;&#x2F;span&gt;&lt;span&gt;      &amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;a &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;href&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;{{ config.base_url }}&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;class&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;site-name&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;&amp;gt;Vjaylakshman K&amp;lt;&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;a&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
-&lt;&#x2F;span&gt;&lt;span&gt;      &amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;ul&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
-&lt;&#x2F;span&gt;&lt;span&gt;        {% if config.extra.navbar_items %}
-&lt;&#x2F;span&gt;&lt;span&gt;          {% for item in config.extra.navbar_items %}
-&lt;&#x2F;span&gt;&lt;span&gt;            &amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;li&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;a &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;href&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;{{ get_url(path=item.url) }}&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;&amp;gt;{{ item.name }}&amp;lt;&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;a&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;&amp;lt;&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;li&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
-&lt;&#x2F;span&gt;&lt;span&gt;          {% endfor %}
-&lt;&#x2F;span&gt;&lt;span&gt;        {% endif %}
-&lt;&#x2F;span&gt;&lt;span&gt;      &amp;lt;&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;ul&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
-&lt;&#x2F;span&gt;&lt;span&gt;    &amp;lt;&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;div&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
-&lt;&#x2F;span&gt;&lt;span&gt;  &amp;lt;&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;nav&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;html&quot; class=&quot;language-html &quot;&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;&amp;lt;nav&amp;gt;
+    &amp;lt;div class=&amp;quot;nav-container&amp;quot;&amp;gt;
+      &amp;lt;a href=&amp;quot;{{ config.base_url }}&amp;quot; class=&amp;quot;site-name&amp;quot;&amp;gt;Vjaylakshman K&amp;lt;&amp;#x2F;a&amp;gt;
+      &amp;lt;ul&amp;gt;
+        {% if config.extra.navbar_items %}
+          {% for item in config.extra.navbar_items %}
+            &amp;lt;li&amp;gt;&amp;lt;a href=&amp;quot;{{ get_url(path=item.url) }}&amp;quot;&amp;gt;{{ item.name }}&amp;lt;&amp;#x2F;a&amp;gt;&amp;lt;&amp;#x2F;li&amp;gt;
+          {% endfor %}
+        {% endif %}
+      &amp;lt;&amp;#x2F;ul&amp;gt;
+    &amp;lt;&amp;#x2F;div&amp;gt;
+  &amp;lt;&amp;#x2F;nav&amp;gt;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;The get_url is a built in function provided by Zola to fetch the permalink of the pages. You can then choose your favourite AI or LLM tool to generate a minimalist CSS template for your website. Test it out and check if it all works and looks well :D&lt;&#x2F;p&gt;
 &lt;h3 id=&quot;setting-up-github-pages-for-zola&quot;&gt;Setting up Github Pages for Zola&lt;&#x2F;h3&gt;
 &lt;p&gt;In order to finally deploy it on Github pages, create a main.yml file under &lt;code&gt;.github&#x2F;workflows&lt;&#x2F;code&gt; and add the following YAML code. This is under the assumption that the page is going to be deployed in another repository. Before that make sure the DEPLOY_TOKEN is added to the secrets of the repository (This is a personal access token, check how to make one here: &lt;a href=&quot;https:&#x2F;&#x2F;docs.github.com&#x2F;en&#x2F;authentication&#x2F;keeping-your-account-and-data-secure&#x2F;managing-your-personal-access-tokens&quot;&gt;Link&lt;&#x2F;a&gt;)&lt;&#x2F;p&gt;
-&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# On every push this script is executed
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;on&lt;&#x2F;span&gt;&lt;span&gt;:
-&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;push&lt;&#x2F;span&gt;&lt;span&gt;:
-&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;branches&lt;&#x2F;span&gt;&lt;span&gt;:
-&lt;&#x2F;span&gt;&lt;span&gt;      - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;main
-&lt;&#x2F;span&gt;&lt;span&gt;
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;permissions&lt;&#x2F;span&gt;&lt;span&gt;:
-&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;contents&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;read
-&lt;&#x2F;span&gt;&lt;span&gt;
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Build and deploy GH Pages
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;jobs&lt;&#x2F;span&gt;&lt;span&gt;:
-&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;build&lt;&#x2F;span&gt;&lt;span&gt;:
-&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;runs-on&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;ubuntu-latest
-&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;github.ref == &amp;#39;refs&#x2F;heads&#x2F;main&amp;#39;
-&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;steps&lt;&#x2F;span&gt;&lt;span&gt;:
-&lt;&#x2F;span&gt;&lt;span&gt;      - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Checkout source repository
-&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;uses&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;actions&#x2F;checkout@v4
-&lt;&#x2F;span&gt;&lt;span&gt;      
-&lt;&#x2F;span&gt;&lt;span&gt;      - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Install Zola
-&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;run&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;|
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;          curl -L https:&#x2F;&#x2F;github.com&#x2F;getzola&#x2F;zola&#x2F;releases&#x2F;download&#x2F;v0.18.0&#x2F;zola-v0.18.0-x86_64-unknown-linux-gnu.tar.gz | tar xz
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;          sudo mv zola &#x2F;usr&#x2F;local&#x2F;bin
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;      
-&lt;&#x2F;span&gt;&lt;span&gt;      - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Build Zola site
-&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;run&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;zola build
-&lt;&#x2F;span&gt;&lt;span&gt;      
-&lt;&#x2F;span&gt;&lt;span&gt;      - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Deploy to vjay15.github.io repository
-&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;uses&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;peaceiris&#x2F;actions-gh-pages@v3
-&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;with&lt;&#x2F;span&gt;&lt;span&gt;:
-&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;personal_token&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;${{ secrets.DEPLOY_TOKEN }}
-&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;external_repository&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Vjay15&#x2F;vjay15.github.io
-&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;publish_dir&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;.&#x2F;public
-&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;publish_branch&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;main
-&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;user_name&lt;&#x2F;span&gt;&lt;span&gt;: &amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;github-actions[bot]&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;
-&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;user_email&lt;&#x2F;span&gt;&lt;span&gt;: &amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;github-actions[bot]@users.noreply.github.com&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;yaml&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;# On every push this script is executed
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+name: Build and deploy GH Pages
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.ref == &amp;#x27;refs&amp;#x2F;heads&amp;#x2F;main&amp;#x27;
+    steps:
+      - name: Checkout source repository
+        uses: actions&amp;#x2F;checkout@v4
+      
+      - name: Install Zola
+        run: |
+          curl -L https:&amp;#x2F;&amp;#x2F;github.com&amp;#x2F;getzola&amp;#x2F;zola&amp;#x2F;releases&amp;#x2F;download&amp;#x2F;v0.18.0&amp;#x2F;zola-v0.18.0-x86_64-unknown-linux-gnu.tar.gz | tar xz
+          sudo mv zola &amp;#x2F;usr&amp;#x2F;local&amp;#x2F;bin
+      
+      - name: Build Zola site
+        run: zola build
+      
+      - name: Deploy to vjay15.github.io repository
+        uses: peaceiris&amp;#x2F;actions-gh-pages@v3
+        with:
+          personal_token: ${{ secrets.DEPLOY_TOKEN }}
+          external_repository: Vjay15&amp;#x2F;vjay15.github.io
+          publish_dir: .&amp;#x2F;public
+          publish_branch: main
+          user_name: &amp;#x27;github-actions[bot]&amp;#x27;
+          user_email: &amp;#x27;github-actions[bot]@users.noreply.github.com&amp;#x27;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;In case you are publishing this website to elsewhere I suggest you to check the documentation: &lt;a href=&quot;https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;github-pages&#x2F;&quot;&gt;Link&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
 &lt;p&gt;This will run and deploy the page automatically the moment you push code to the repository. With that we have now successfully built a static site using Zola from scratch!
 Another feature of Zola just like other SSGs is that you can use a pre-existing theme and use it instead. I like to control how the page looks by myself and keep it minimalistic, therefore I created the structure and just made AI write the styles hehe.&lt;&#x2F;p&gt;
@@ -218,22 +309,22 @@ Another feature of Zola just like other SSGs is that you can use a pre-existing 
 &lt;li&gt;Enable the Discuss feature, &lt;a href=&quot;https:&#x2F;&#x2F;docs.github.com&#x2F;en&#x2F;github&#x2F;administering-a-repository&#x2F;managing-repository-settings&#x2F;enabling-or-disabling-github-discussions-for-a-repository&quot;&gt;Reference&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
 &lt;&#x2F;ul&gt;
 &lt;p&gt;After this visit the Giscus &lt;a href=&quot;https:&#x2F;&#x2F;giscus.app&#x2F;&quot;&gt;website&lt;&#x2F;a&gt; and enter the information it asks for, if you don&#x27;t want to read through it just scroll down and under the repository field enter your &lt;code&gt;username&#x2F;repositoryname&lt;&#x2F;code&gt;, it will show a green tick if your repository is configured properly. Scroll down copy the &lt;code&gt;&amp;lt;script&amp;gt;&lt;&#x2F;code&gt; code which looks like:&lt;&#x2F;p&gt;
-&lt;pre data-lang=&quot;js&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-js &quot;&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;script src&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;https:&#x2F;&#x2F;giscus.app&#x2F;client.js&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
-&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;repo&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;[ENTER REPO HERE]&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
-&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;repo&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;id&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;[ENTER REPO ID HERE]&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
-&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;category&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;[ENTER CATEGORY NAME HERE]&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
-&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;category&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;id&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;[ENTER CATEGORY ID HERE]&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
-&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;mapping&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;pathname&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
-&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;strict&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
-&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;reactions&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;enabled&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
-&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;emit&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;metadata&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
-&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;input&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;position&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;bottom&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
-&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;theme&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;preferred_color_scheme&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
-&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;data&lt;&#x2F;span&gt;&lt;span&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;lang&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;en&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
-&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;crossorigin&lt;&#x2F;span&gt;&lt;span&gt;=&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;anonymous&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
-&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;async&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
-&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;script&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
-&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;js&quot; class=&quot;language-js &quot;&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&amp;lt;script src=&amp;quot;https:&amp;#x2F;&amp;#x2F;giscus.app&amp;#x2F;client.js&amp;quot;
+        data-repo=&amp;quot;[ENTER REPO HERE]&amp;quot;
+        data-repo-id=&amp;quot;[ENTER REPO ID HERE]&amp;quot;
+        data-category=&amp;quot;[ENTER CATEGORY NAME HERE]&amp;quot;
+        data-category-id=&amp;quot;[ENTER CATEGORY ID HERE]&amp;quot;
+        data-mapping=&amp;quot;pathname&amp;quot;
+        data-strict=&amp;quot;0&amp;quot;
+        data-reactions-enabled=&amp;quot;1&amp;quot;
+        data-emit-metadata=&amp;quot;0&amp;quot;
+        data-input-position=&amp;quot;bottom&amp;quot;
+        data-theme=&amp;quot;preferred_color_scheme&amp;quot;
+        data-lang=&amp;quot;en&amp;quot;
+        crossorigin=&amp;quot;anonymous&amp;quot;
+        async&amp;gt;
+&amp;lt;&amp;#x2F;script&amp;gt;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;The values will be autofilled since you had already given the username&#x2F;repositoryname. This copied code can be appended to the template for your blog, in my case it&#x27;s in blog.html and voila! the comment box is there along with a reaction button :D&lt;&#x2F;p&gt;
 &lt;p&gt;I hope you guys learnt something out of this, do make your own profile&#x2F;blog page its fun to learn stuff and share it to people!&lt;&#x2F;p&gt;
 &lt;p&gt;More random blogs coming soon so stay tuned! Have an epic day.&lt;&#x2F;p&gt;
