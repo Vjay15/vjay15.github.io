@@ -114,6 +114,9 @@ return result.slice(0, length);
 </code></pre>
 <p>The reason being that BigInts use arbitrary-precision math implemented in software, unlike normal number types that map to hardware-native floats and integers. That software path tends to allocate more on the heap than a simple hash comparison would.</p>
 <p>Another issue is that not just am I doing one of the slowest operations using BigInt but also 43 times, despite only needing the first 10 or 8 characters, this resulted in the worse performance overall compared to just simple hash.</p>
+<blockquote>
+<p>Interesting blog that I found regarding BigInts in javascript: <a href="https://waspdev.com/articles/2025-08-16/is-js-bigint-broken">Link</a></p>
+</blockquote>
 <h3 id="final-approach-shake-hash-algorithm">Final Approach - SHAKE hash algorithm</h3>
 <p>The final algorithm that I chose is the newest family of SHA algorithm, SHA3 and a variant of it called SHAKE. SHA3 algorithm was a bit different from the traditional SHA2 (SHA-256 etc) where instead of trying to create fixed size blocks based on the type of algorithm, here we try to absorb the entire text into a 1600 unit block like a sponge.</p>
 <p>I tried digging into the implementation, and understood some of it. I will let the existing articles explain this since they do a better job than I would here.</p>
