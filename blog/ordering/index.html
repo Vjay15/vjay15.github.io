@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ordering items for the orderly</title>
+  <link rel="stylesheet" href="https://vjay15.github.io/styles/styles.css">
+  <link rel="icon" type="image/png" href="https://vjay15.github.io/images/favicon.ico">
+  
+  
+
+</head>
+
+<body>
+  <nav>
+    <div class="nav-container">
+      <a href="https:&#x2F;&#x2F;vjay15.github.io" class="site-name">Vjaylakshman K</a>
+      <button class="menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <ul class="nav-menu">
+        
+          
+            <li><a href="https://vjay15.github.io/about">About</a></li>
+          
+            <li><a href="https://vjay15.github.io/portfolio">Portfolio</a></li>
+          
+            <li><a href="https://vjay15.github.io/blog">Blog</a></li>
+          
+            <li><a href="https://vjay15.github.io/bucketlist">Bucket List</a></li>
+          
+            <li><a href="https://vjay15.github.io/files/Resume.pdf">Resume</a></li>
+          
+        
+      </ul>
+    </div>
+  </nav>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const menuToggle = document.querySelector('.menu-toggle');
+      const navMenu = document.querySelector('.nav-menu');
+      
+      if (menuToggle && navMenu) {
+        menuToggle.addEventListener('click', function() {
+          const isExpanded = this.getAttribute('aria-expanded') === 'true';
+          navMenu.classList.toggle('active');
+          this.setAttribute('aria-expanded', !isExpanded);
+        });
+      }
+    });
+  </script>
+  
+  <section class="section">
+    <div class="container">
+      
+<h1>Ordering items for the orderly</h1>
+<p><i>Vjaylakshman K • October 03, 2026</i></p>
+<p>Hey my epic and cool friends on the internet, I hope you have been doing well! it's your junior engineer from last time who, ahem, made designing API keys sound like rocket science. I have finally become a full-timer (MTS @ <a href="https://sparrowcrm.com">SparrowCRM</a>) and I am learning lots of cool things and also bashing my head against the wall sometimes.</p>
+<p>This time I am going to explain some cool things I learn about ordering items!</p>
+<h2 id="the-task">The task</h2>
+<p>We use React Flow at work for all graph based systems in the product and I was assigned the task of supporting adding in between nodes in one of the features of SparrowCRM, Smart Router, which allows you to assign leads based on a preset of rules. Here is how it basically used to arrange the nodes in the graph before.</p>
+<p>Each node was assigned a two-digit value such as 11, 12, 21, 22 etc so to roughly put, it looks like this</p>
+<p><img src="/images/initial_nodes.png" alt="Nodes arranged in a grid with two digit values like 11, 12, 21, 22" /></p>
+<p>Very easy solution at that point, the ones place dictates the horizontal position whereas the tens position dictates the vertical position. This is the plain simple integer based ordering where you just order items as 1, 2, 3 and call it a day, but it falls short when you bring in adding or deleting in between nodes, when all positions are assumed to be integers, adding a node in between requires rebalancing the entire subtree from that node which is not optimal. This triggered the itch in me to look into how graphs are handled and by extension ordering.</p>
+<h2 id="let-the-react-flow-flow">Let the React flow, flow....</h2>
+<p>Ideally, in React Flow based graph systems the nodes and the edges are free flowing, they are not constrained by the "This node should always be in this position" nor "This edge should always be a straight line". Nodes exist separately and you control which node is connected to what and where nodes should be, just like n8n. You just record the X and Y positions of each node and keep note of the edges and their source and target nodes. The position, the path taken is entirely dictated by the frontend, and the backend stores them. If in case you want to show them in order, you can add a handy dandy "Re-organize" button and use an existing re-organizing algorithm to calculate the position of the nodes such as ELK.</p>
+<p>The unique case in my situation is that the system was based on deterministic node placements as points in a grid-like system. In this case letting React flow, flow was not really a choice for me since that meant refactoring the entire front end to support the new system and also how the backend handled the routing. One thing I learnt in engineering is that, make it simple, make it work then make it better. The current system works, but it's an ordered grid placement where order mattered. So instead of trying to force it into a new system, I tried looking at how we can use the existing system and provide the feature soon. Therefore I pivoted my research into how ordering is handled.</p>
+<p>The first thing I did was decouple the position into separate horizontal and vertical elements since keeping them in a single integer would not help at all. Now we shall look into how we can approach this.</p>
+<h2 id="what-if-1-becomes-1000">What if 1 becomes 1000?</h2>
+<p>The decoupling alone wont help since, essentially they were just single digit numbers and since it's integer based ordering I would've to update every node downstream if I have to just add a node in between.</p>
+<pre><code>keys = [1, 2, 3, 4]
+
+append:
+    return last(keys) + 1                    &#x2F;&#x2F; 4 -&gt; 5
+
+insert_at(i):
+    &#x2F;&#x2F; no integer exists between 1 and 2,
+    &#x2F;&#x2F; so shift every key from i onwards by 1
+    for each key at position &gt;= i:
+        key = key + 1
+    return keys[i]                           &#x2F;&#x2F; take the freed slot
+</code></pre>
+<p>Instead what if I just made 1 as 1000 and 2 as 2000, now I have 1000 nodes to add in between!</p>
+<p><img src="/images/gap_integer_order.png" alt="Integer ordering with a wide gap, nodes at 1000, 2000, 3000" /></p>
+<p>One of the easiest approaches that can be taken but it comes with its shortcomings even if you can just take the midpoint of each of these as an integer you will eventually hit a point where you will lose precision, what if you want to add between 1000 and 1001 the rebalancing has to happen and this can be hit in literally 9 inserts, which is enough but not a lot and it would trigger frequent rebalancing which is not ideal. Let's improve on this</p>
+<p>The code version of that idea:</p>
+<pre><code>GAP = 1000
+keys = [0, 1000, 2000]
+
+append:
+    return last(keys) + GAP                  &#x2F;&#x2F; 2000 -&gt; 3000
+
+insert_at(i):
+    left  = keys[i - 1]
+    right = keys[i]
+
+    if right - left &lt;= 1:                    &#x2F;&#x2F; like 1000 and 1001, no room
+        keys = respread all keys GAP apart   &#x2F;&#x2F; the rebalance
+        return keys[i]
+
+    return left + (right - left) &#x2F; 2         &#x2F;&#x2F; 1000, 2000 -&gt; 1500
+</code></pre>
+<h2 id="here-comes-fractional-indexing">Here comes Fractional Indexing</h2>
+<pre><code>keys = [1.0, 2.0]
+
+insert_at(i):
+    mid = (keys[i - 1] + keys[i]) &#x2F; 2        &#x2F;&#x2F; 1.0 and 2.0 -&gt; 1.5
+
+    if mid did not move:                     &#x2F;&#x2F; double ran out of precision
+        keys = spread all keys evenly        &#x2F;&#x2F; the rebalance
+        return keys[i]
+
+    return mid
+</code></pre>
+<p>What if we throw away the approach of using integers and instead head the path of floats, this is one of the approaches taken by Figma as well (<a href="https://www.figma.com/blog/realtime-editing-of-ordered-sequences/">Realtime Editing of Ordered Sequences</a>). Given two integers such as 1 and 2, we keep dividing them to find the midpoint, easy and they give floats that sit well in between the two nodes.</p>
+<p><img src="/images/float_order.png" alt="Float based fractional indexing, finding the midpoint between two nodes" /></p>
+<p>But there is a problem where the floats can eventually reach the precision wall; currently Postgres doubles and JavaScript floats support 53 bits of precision. This could approximate it to around 16 digit precision combining both the whole numbers and the decimals. Therefore we need to keep a check whether the newly generated index is in between the previous and the next node's index.</p>
+<p>In case it reaches that scenario, we need to just rebalance aka take the already existing indexes of all elements and redistribute the indices to 1, 2, 3, 4 etc. I also combined the approach of having integers spaced a bit wider like 1000, 2000, 3000 etc. With this approach I got approximately 53 successive inserts in an interval before it hit rebalance. This solved most of my problems. But I delved deeper.</p>
+<h2 id="fractional-indexing-but-make-it-strings">Fractional Indexing but make it strings??</h2>
+<p>For a system which has frequent inserts and deletes happening at all times, Fractional Indexing based on floats is not scalable: they will hit the 53 insert mark so quickly and would have to rebalance often, and this will result in the system becoming slower overall.</p>
+<p>Behold the holy grail of fractional indexing articles, <a href="https://observablehq.com/%40dgreensp/implementing-fractional-indexing">David Greenspan's notebook</a>. There is no article on ordering without a mention of David Greenspan's notebooks or Rocicorp's fractional-indexing package. Both follow a similar approach which I will try to put it as simply as possible.</p>
+<p>Instead of relying on the ordering of integers and floats, we move to a string based ordering system, where 0 is "0" instead. Seems quite simple but without proper guardrails, this could become complex very fast. So let's go over the basic rules of Greenspan's algorithm</p>
+<ol>
+<li>The strings start with a, b and c, usually where a-prefixed keys will have a single integer value after it and b will have two integer values after it and so on. ex: a0, b00, c000. The reason is that let's say we reach az and we want to append another element, then if we try to do a roll over and get a00, this key won't satisfy the constraint since "a00" is not greater than "az".</li>
+<li>When inserting between two keys, factor out the common prefix and find the midpoint of the differing part. This ensures the keys don't collide and keep growing.</li>
+<li>If the midpoint has to be found between adjacent neighbors, let's say a and b, we instead roll it over to the next character aka midpoint("a","b") = aV, the reason being V is the midpoint of the base62 characters.</li>
+<li>The trailing zeroes are banned, the reason being that given we have to find a midpoint between "2" and "20" we then try to find the midpoint of (null, 0) since 2 is a common prefix but in base62 0 is the first element, and even if we try to roll over, 2z is not less than 20.</li>
+<li>The add before a0 is also handled specially since it would be a midpoint of the (null, a0) case, here we will then go for Zz, Zy etc since Z is before a. The append and prepend are called the sentinel cases.</li>
+</ol>
+<pre><code>keys are strings: &quot;a0&quot;, &quot;a1&quot;, &quot;a0V&quot; ...
+
+append(a0)   -&gt; &quot;a1&quot;
+prepend(a0)  -&gt; &quot;Zz&quot;
+between(a0, a1) -&gt; &quot;a0V&quot;      &#x2F;&#x2F; there is ALWAYS a longer string that fits
+
+&#x2F;&#x2F; which is why there is no rebalance here, ever
+</code></pre>
+<p><img src="/images/string_order.png" alt="Lexicographic fractional indexing with base62 string keys" /></p>
+<p>This is such a beautiful and wonderfully scalable approach. The rebalance trigger is no more losing precision, but the guardrails we set, we are free to choose the rebalance criteria and if it has to be rebalanced, it just reassigns new indices for each node.</p>
+<p>I tried to reason this out with Greenspan's notebook but was left with some confusion and looked into Rustam's article which cleared most of my doubts, it's a great read: <a href="https://n69.in/blog/fractional-indexing/">Fractional Indexing: Ordering Items in Collaborative Lists</a></p>
+<p>Atlassian's LexoRank is built on top of this core machinery, but they add extra features to it. A rank of an item in Jira looks like this</p>
+<p><img src="/images/lexorank.png" alt="An Atlassian LexoRank key with a bucket number, separator and rank string" /></p>
+<p>The last part is the string which we are familiar with and there is a separator and a number. This number denotes the bucket to which the current items belong. When a rebalance occurs, the values in the 0th bucket will be moved to the 1st bucket and so on. There are three buckets so far: 0, 1 and 2. This can be very useful in case we want to recover from a failed rebalancing.</p>
+<p>The specifics of how exactly LexoRank works seems quite close to the lexicographic indexing albeit with it's own features. Although I am not 100% sure if they follow the same approaches.</p>
+<h2 id="why-not-linked-lists">Why not Linked Lists?</h2>
+<p>Linked List would be another natural candidate for this but I didn't include it in this article, the reason being that to order something properly we have to traverse the whole linked list, and the implementation would be complex. Let's take for example I need to validate an addition of an item based on a parent of this branch of items. I need to traverse the list backwards to find it out. It could be easily tackled with our fractional indexing approaches by just order based on the index and find the first element.</p>
+<h2 id="benchmarks">Benchmarks:</h2>
+<p>Finally I wanted to see how all of them compare against each other. I ran everything against a real SQLite file instead of in-memory arrays, and measured each insert as TAT, the time from generating the key to the row being saved in the db. There were two workloads: a mixed one that seeds a 6x6 grid (my 11/12/21/22 setup split into separate x and y) and does 300 random inserts on both axes, and a squeeze one where every insert goes into the same gap between two nodes. Each strategy gets squeezed from keys it would naturally hold: integer starts dense at 1 and 2, gap and floats start at 1000 and 2000, and strings start at a0 and a1. For the string approach I used Rocicorp's <a href="https://www.npmjs.com/package/fractional-indexing">fractional-indexing</a> package instead of implementing Greenspan's algorithm myself.</p>
+<p>In simple words: mixed is the normal case, a graph like a real router where inserts happen all over the place. Squeeze is the worst case, just two nodes with every insert going into the same gap between them.</p>
+<blockquote>
+<p>Disclaimer: Since this was just a disposable test, I used an LLM to generate the tests, ran the experiment and I manually verified them.</p>
+</blockquote>
+<table><thead><tr><th>Strategy</th><th style="text-align: right">Avg TAT (mixed)</th><th style="text-align: right">Max TAT (mixed)</th><th style="text-align: right">Rebalances (mixed / 300)</th><th style="text-align: right">Inserts survived before 1st rebalance (squeeze)</th><th style="text-align: right">Rows updated in 1st rebalance</th><th style="text-align: right">Rebalance latency</th><th style="text-align: right">Longest key</th></tr></thead><tbody>
+<tr><td><strong>integer</strong></td><td style="text-align: right">11.3 ms</td><td style="text-align: right">25.0 ms</td><td style="text-align: right"><strong>290 / 300</strong></td><td style="text-align: right">0 (dense 1,2)</td><td style="text-align: right">1</td><td style="text-align: right">4–8 ms</td><td style="text-align: right">4</td></tr>
+<tr><td><strong>gap-1000</strong></td><td style="text-align: right">4.9 ms</td><td style="text-align: right">17.3 ms</td><td style="text-align: right">2 / 300</td><td style="text-align: right">9</td><td style="text-align: right">11</td><td style="text-align: right">6–9 ms</td><td style="text-align: right">6</td></tr>
+<tr><td><strong>fractional-float</strong></td><td style="text-align: right">4.7 ms</td><td style="text-align: right">11.3 ms</td><td style="text-align: right">0 / 300</td><td style="text-align: right"><strong>53</strong></td><td style="text-align: right">55</td><td style="text-align: right">4–12 ms</td><td style="text-align: right">24</td></tr>
+<tr><td><strong>string-fractional (unbounded)</strong></td><td style="text-align: right"><strong>4.6 ms</strong></td><td style="text-align: right">14.0 ms</td><td style="text-align: right">0 / 300</td><td style="text-align: right">3000+ (never)</td><td style="text-align: right">—</td><td style="text-align: right">—</td><td style="text-align: right">502</td></tr>
+<tr><td><strong>string-fractional (32 char capped)</strong></td><td style="text-align: right">4.2 ms</td><td style="text-align: right">12.9 ms</td><td style="text-align: right">0 / 300</td><td style="text-align: right">180</td><td style="text-align: right">181</td><td style="text-align: right">6–27 ms</td><td style="text-align: right">5</td></tr>
+</tbody></table>
+<p>Some observations:</p>
+<ul>
+<li>integer rebalanced on 290 out of 300 inserts. Since integer keys are always dense (1,2,3...), there is no gap to begin with, and the squeeze probe could not do even one insert before a rebalance.</li>
+<li>gap-1000 gives you around 9 inserts per gap before a respread. To see what that means in practice: all strategies ran the same 300 inserts, but integer ended up writing ~23,000 rows to the db to do it (renumbering the tail on almost every insert), while gap-1000 wrote only 407. Same work, 60x fewer writes.</li>
+<li>fractional floats survived 53 inserts between 1000 and 2000 before the midpoint collapsed onto a neighbour, which lines up with the 52-bit mantissa of doubles. After the respread every gap gets fresh room, so the next failure took over a thousand more inserts, in a different gap this time.</li>
+<li>string fractional (unbounded) did not rebalance even once. 3000 inserts into the same slot and the keys just keep growing (up to 502 chars).</li>
+<li>string fractional with a 32 char cap behaves like the column is VARCHAR(32). If a new key does not fit in 32 chars, we rebalance. In the squeeze this happened every ~181 inserts, and in the mixed workload it never happened at all, keys stayed at 5 chars.</li>
+</ul>
+<p>Why 32 chars? Shorter keys mean a smaller db index and a smaller json payload for the frontend. With 500 nodes, going from 3 char keys to 256 char keys takes the db table from 28 KB to 300 KB and the payload from 137 KB to 381 KB. So there is a real cost to letting keys grow. But the rebalance speed does not really change with key length (it is ~20 to 30 ms either way, it depends on the number of rows, not how long they are). 32 chars is just a comfortable middle ground, keys stay small and normal inserts never come anywhere close to the limit.</p>
+<p>The timings may vary between runs due to db write latency, but they capture most of the real life scenario. I also checked the read path, how long it takes to build the graph back from the stored keys. Even with 10,000 nodes all four strategies finish within a couple ms of each other, so the ordering strategy mostly matters on the write path.</p>
+<p>Eventually I settled on the float based fractional indexing approach, reason being that I just wanted to use what seems to be easy to understand, yes lexicographic approach is understandable and I could implement it but one thing I learnt from my earlier approaches is to keep things simple. Along with that, for my use case, a user is going to build a router and then is probably not going to use it for quite a long time so frequent inserts are not a concern of mine. Use the right tool for the right job.</p>
+<h2 id="conclusion">Conclusion:</h2>
+<p>I never thought that ordering items could be this thoughtful haha, but I learned so much that I felt I had to write an article on it. Thanks for reading through this. Hope you all have a great day.</p>
+<blockquote>
+<p>AI USAGE DISCLAIMER: I used AI in order to find articles apart from whatever I could do via a search engine, help me visualise and explain and understand tradeoffs. For writing I wrote the initial draft fully by hand and then used AI to fact check my claims and fix my silly spelling mistakes. And the test bench is also fully AI generated with human review.</p>
+</blockquote>
+
+<script src="https://giscus.app/client.js"
+        data-repo="Vjay15/giscus-discussions"
+        data-repo-id="R_kgDOQhnuHw"
+        data-category="General"
+        data-category-id="DIC_kwDOQhnuH84CzVUk"
+        data-mapping="url"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="dark_tritanopia"
+        data-lang="en"
+        crossorigin="anonymous"
+        async>
+</script>
+
+    </div>
+  </section>
+  
+  
+  <footer>
+    <div class="footer-container">
+      <div class="social-links">
+        <a href="https:&#x2F;&#x2F;github.com&#x2F;vjay15" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+          <img src="https://vjay15.github.io/images/github.png" alt="GitHub" class="social-icon">
+        </a>
+        <a href="https:&#x2F;&#x2F;linkedin.com&#x2F;in&#x2F;vjay15" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+          <img src="https://vjay15.github.io/images/linkedin.png" alt="LinkedIn" class="social-icon">
+        </a>
+        <a href="mailto:vjaylakshman15@gmail.com" aria-label="Email">
+          <img src="https://vjay15.github.io/images/mail.png" alt="Email" class="social-icon">
+        </a>
+        <a href="https://vjay15.github.io/blog/atom.xml" aria-label="RSS Feed" target="_blank" rel="noopener noreferrer">
+          <img src="https://vjay15.github.io/images/rss.png" alt="RSS Feed" class="social-icon">
+        </a>
+      </div>
+      <div class="footer-text">
+        Created by Vjaylakshman K with <a href="https://www.getzola.org/">Zola</a>
+      </div>
+    </div>
+  </footer>
+</body>
+
+</html>

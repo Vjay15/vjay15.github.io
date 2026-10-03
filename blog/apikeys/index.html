@@ -65,8 +65,7 @@
 <p>Sounds simple enough? so all it is, is just a string that allows you to authenticate yourself! But I was not happy with this answer, so I decided to dig further. The reason is very simple, I am just curious and love to research a topic thoroughly before implementing.</p>
 <h2 id="format-of-api-keys">Format of API Keys</h2>
 <p>API keys are usually formatted in this way.</p>
-<img src="/images/sample_token.png" alt="Sample API key" width="600" style="display: block; margin: 0 auto;" />
-<br>
+<p><img src="/images/sample_token.png" alt="Sample API key" /></p>
 <p>The prefix is just extra metadata that is useful for the end user as well as the developer to figure out the kind of API key it is. For example github uses the gh(o|p) prefix, stripe uses sk_live or sk_test prefix.</p>
 <p>The next few characters in my example key is just random hex string or randomly generated string whose length could vary across implementations. And at last either clubbed together with the hex string or separated by an '_' is the checksum. The reason behind having a checksum is that it allows you to verify first whether this API key is even valid before hitting the DB, since either there could be a mistype by the user or maybe a missed character.</p>
 <blockquote>
