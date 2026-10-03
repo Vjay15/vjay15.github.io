@@ -7,7 +7,7 @@
     <updated>2026-10-03T00:00:00+00:00</updated>
     <id>https://vjay15.github.io/blog/atom.xml</id>
     <entry xml:lang="en">
-        <title>Ordering items for the orderly</title>
+        <title>Ordering Items for the Orderly</title>
         <published>2026-10-03T00:00:00+00:00</published>
         <updated>2026-10-03T00:00:00+00:00</updated>
         
@@ -21,7 +21,7 @@
         <id>https://vjay15.github.io/blog/ordering/</id>
         
         <content type="html" xml:base="https://vjay15.github.io/blog/ordering/">&lt;p&gt;Hey my epic and cool friends on the internet, I hope you have been doing well! it&#x27;s your junior engineer from last time who, ahem, made designing API keys sound like rocket science. I have finally become a full-timer (MTS @ &lt;a href=&quot;https:&#x2F;&#x2F;sparrowcrm.com&quot;&gt;SparrowCRM&lt;&#x2F;a&gt;) and I am learning lots of cool things and also bashing my head against the wall sometimes.&lt;&#x2F;p&gt;
-&lt;p&gt;This time I am going to explain some cool things I learnt about ordering items!&lt;&#x2F;p&gt;
+&lt;p&gt;This time I am going to explain some cool things I learnt about ordering items :D !&lt;&#x2F;p&gt;
 &lt;h2 id=&quot;the-task&quot;&gt;The task&lt;&#x2F;h2&gt;
 &lt;p&gt;We use React Flow at work for all graph based systems in the product and I was assigned the task of supporting adding in between nodes in one of the features of SparrowCRM, Smart Router, which allows you to assign leads based on a preset of rules. Here is how it basically used to arrange the nodes in the graph before.&lt;&#x2F;p&gt;
 &lt;p&gt;Each node was assigned a two-digit value such as 11, 12, 21, 22 etc so to roughly put, it looks like this&lt;&#x2F;p&gt;
@@ -134,7 +134,7 @@ between(a0, a1) -&amp;gt; &amp;quot;a0V&amp;quot;      &amp;#x2F;&amp;#x2F; ther
 &lt;p&gt;The timings may vary between runs due to db write latency, but they capture most of the real life scenario. I also checked the read path, how long it takes to build the graph back from the stored keys. Even with 10,000 nodes all four strategies finish within a couple ms of each other, so the ordering strategy mostly matters on the write path.&lt;&#x2F;p&gt;
 &lt;p&gt;Eventually I settled on the float based fractional indexing approach, reason being that I just wanted to use what seems to be easy to understand, yes lexicographic approach is understandable and I could implement it but one thing I learnt from my earlier approaches is to keep things simple. Along with that, for my use case, a user is going to build a router and then is probably not going to use it for quite a long time so frequent inserts are not a concern of mine. Use the right tool for the right job.&lt;&#x2F;p&gt;
 &lt;h2 id=&quot;conclusion&quot;&gt;Conclusion:&lt;&#x2F;h2&gt;
-&lt;p&gt;I never thought that ordering items could be this thoughtful haha, but I learned so much that I felt I had to write an article on it. Thanks for reading through this. Hope you all have a great day.&lt;&#x2F;p&gt;
+&lt;p&gt;I never thought that ordering items could be this thoughtful haha, but I learned so much that I felt I had to write an article on it. Thanks for reading through this. Hope you all have a great day :)&lt;&#x2F;p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;AI USAGE DISCLAIMER: I used AI in order to find articles apart from whatever I could do via a search engine, help me visualise and explain and understand tradeoffs. For writing I wrote the initial draft fully by hand and then used AI to fact check my claims and fix my silly spelling mistakes. And the test bench is also fully AI generated with human review.&lt;&#x2F;p&gt;
 &lt;&#x2F;blockquote&gt;
