@@ -8,56 +8,36 @@
   <link rel="stylesheet" href="https://vjay15.github.io/styles/styles.css">
   <link rel="icon" type="image/png" href="https://vjay15.github.io/images/favicon.ico">
   
-  
-
 </head>
 
 <body>
-  <nav>
-    <div class="nav-container">
-      <a href="https:&#x2F;&#x2F;vjay15.github.io" class="site-name">Vjaylakshman K</a>
-      <button class="menu-toggle" aria-label="Toggle menu" aria-expanded="false">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-      <ul class="nav-menu">
+
+<div id="wrap">
+
+  <div id="header">
+    <button id="theme-toggle" type="button" onclick="toggleTheme()">light</button>
+    <div id="sitename"><a href="https:&#x2F;&#x2F;vjay15.github.io">Vjaylakshman K</a></div>
+    <div id="nav">
+      
         
-          
-            <li><a href="https://vjay15.github.io/about">About</a></li>
-          
-            <li><a href="https://vjay15.github.io/portfolio">Portfolio</a></li>
-          
-            <li><a href="https://vjay15.github.io/blog">Blog</a></li>
-          
-            <li><a href="https://vjay15.github.io/bucketlist">Bucket List</a></li>
-          
-            <li><a href="https://vjay15.github.io/files/Resume.pdf">Resume</a></li>
-          
+          <a href="https://vjay15.github.io/about">About</a> &middot; 
         
-      </ul>
+          <a href="https://vjay15.github.io/portfolio">Portfolio</a> &middot; 
+        
+          <a href="https://vjay15.github.io/blog">Blog</a> &middot; 
+        
+          <a href="https://vjay15.github.io/bucketlist">Bucket List</a> &middot; 
+        
+          <a href="https://vjay15.github.io/files/Resume.pdf">Resume</a>
+        
+      
     </div>
-  </nav>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const menuToggle = document.querySelector('.menu-toggle');
-      const navMenu = document.querySelector('.nav-menu');
-      
-      if (menuToggle && navMenu) {
-        menuToggle.addEventListener('click', function() {
-          const isExpanded = this.getAttribute('aria-expanded') === 'true';
-          navMenu.classList.toggle('active');
-          this.setAttribute('aria-expanded', !isExpanded);
-        });
-      }
-    });
-  </script>
-  
-  <section class="section">
-    <div class="container">
-      
+  </div>
+
+  <div id="content">
+    
 <h1>Reflecting on the past year</h1>
-<p><i>Vjaylakshman K • December 31, 2025</i></p>
+<p class="postmeta">Vjaylakshman K &middot; December 31, 2025</p>
 <h1 id="hello-everyone-happy-new-year">Hello Everyone! Happy New Year :)</h1>
 <p>Had a chat with a friend today, He told me that "Years seem to pass by faster the older you become" and he is so right, life passes by so fast since we are always so busy with one thing or the other. This year felt like that too!
 The year of 2025 has been quite the year of years. I did so many things I haven't done before, learned many things I hadn't known before, went through so many emotions,
@@ -109,31 +89,57 @@ Channeling energy to my thoughts, attain symmetry"</p>
         async>
 </script>
 
-    </div>
-  </section>
-  
-  
-  <footer>
-    <div class="footer-container">
-      <div class="social-links">
-        <a href="https:&#x2F;&#x2F;github.com&#x2F;vjay15" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-          <img src="https://vjay15.github.io/images/github.png" alt="GitHub" class="social-icon">
-        </a>
-        <a href="https:&#x2F;&#x2F;linkedin.com&#x2F;in&#x2F;vjay15" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-          <img src="https://vjay15.github.io/images/linkedin.png" alt="LinkedIn" class="social-icon">
-        </a>
-        <a href="mailto:vjaylakshman15@gmail.com" aria-label="Email">
-          <img src="https://vjay15.github.io/images/mail.png" alt="Email" class="social-icon">
-        </a>
-        <a href="https://vjay15.github.io/blog/atom.xml" aria-label="RSS Feed" target="_blank" rel="noopener noreferrer">
-          <img src="https://vjay15.github.io/images/rss.png" alt="RSS Feed" class="social-icon">
-        </a>
-      </div>
-      <div class="footer-text">
-        Created by Vjaylakshman K with <a href="https://www.getzola.org/">Zola</a>
-      </div>
-    </div>
-  </footer>
-</body>
+  </div>
 
+  <div id="footer">
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;vjay15">github</a> &middot;
+    <a href="https:&#x2F;&#x2F;linkedin.com&#x2F;in&#x2F;vjay15">linkedin</a> &middot;
+    <a href="mailto:vjaylakshman15@gmail.com">email</a> &middot;
+    <a href="https://vjay15.github.io/blog/atom.xml">rss</a>
+    <br>
+    <span id="footernote">Created by Vjaylakshman K &mdash; generated with <a href="https://www.getzola.org/">Zola</a></span>
+  </div>
+
+</div>
+
+<script>
+function applyTheme(t) {
+  document.documentElement.className = (t === "light") ? "light" : "";
+  var b = document.getElementById("theme-toggle");
+  if (b) { b.innerHTML = (t === "light") ? "dark" : "light"; }
+}
+function toggleTheme() {
+  var t = (document.documentElement.className === "light") ? "dark" : "light";
+  applyTheme(t);
+  try { localStorage.setItem("theme", t); } catch (e) {}
+}
+(function () {
+  var t = null;
+  try { t = localStorage.getItem("theme"); } catch (e) {}
+  if (t !== "light" && t !== "dark") {
+    try {
+      if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) { t = "light"; }
+    } catch (e) {}
+  }
+  applyTheme(t === "light" ? "light" : "dark");
+})();
+
+/* dodge the plushie: pat = hop, first pat = :3 */
+(function () {
+  var d = document.getElementById("dodge");
+  var c = document.getElementById("dodge-caption");
+  if (!d || !d.addEventListener) { return; }
+  d.addEventListener("click", function () {
+    d.className = "";
+    /* restart the animation if its already playing */
+    void d.offsetWidth;
+    d.className = "hop";
+    if (c && c.innerHTML.indexOf(":3") === -1) {
+      c.innerHTML = ":3";
+    }
+  });
+})();
+</script>
+
+</body>
 </html>
